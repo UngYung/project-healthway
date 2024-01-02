@@ -7,16 +7,16 @@ const {
   GraphQLString,
   GraphQLSchema,
   GraphQLList,
+  GraphQLNonNull,
 } = require("graphql");
 
 const PatientType = new GraphQLObjectType({
   name: "Patient",
   fields: () => ({
-    patientID: { type: GraphQLID },
+    id: { type: GraphQLID },
+    patientID: { type: GraphQLString },
     name: { type: GraphQLString },
     dateOfBirth: { type: GraphQLString },
-    medicalHistory: { type: GraphQLString },
-    currentMedications: { type: GraphQLString },
     emergencyContact: { type: GraphQLString },
   }),
 });
@@ -24,19 +24,19 @@ const PatientType = new GraphQLObjectType({
 const AppointmentType = new GraphQLObjectType({
   name: "Appointment",
   fields: () => ({
-    appointmentID: { type: GraphQLID },
+    id: { type: GraphQLID },
     patientID: { type: GraphQLID },
-    doctorID: { type: GraphQLID },
+    doctorID: { type: GraphQLString },
     appointmentDate: { type: GraphQLString },
     time: { type: GraphQLString },
     purpose: { type: GraphQLString },
     notes: { type: GraphQLString },
-    // patient: {
-    //   type: PatientType,
-    //   resolve(parent, args) {
-    //     return PatientRecord.findById(parent.patientID);
-    //   },
-    // },
+    patient: {
+      type: PatientType,
+      resolve(parent, args) {
+        return PatientRecord.findById(parent.patientID);
+      },
+    },
   }),
 });
 
@@ -72,6 +72,61 @@ const RootQuery = new GraphQLObjectType({
   },
 });
 
+// Mutations
+const mutation = new GraphQLObjectType({
+  name: "Mutation",
+  fields: {
+    addPatient: {
+      type: PatientType,
+      args: {
+        name: { type: GraphQLNonNull(GraphQLString) },
+        dateOfBirth: { type: GraphQLNonNull(GraphQLString) },
+        emergencyContact: { type: GraphQLNonNull(GraphQLString) },
+      },
+      resolve(parent, args) {
+        const patient = new PatientRecord({
+          name: args.name,
+          dateOfBirth: args.dateOfBirth,
+          emergencyContact: args.emergencyContact,
+        });
+        return patient.save();
+      },
+    },
+    deletePatient: {
+      type: PatientType,
+      args: {
+        id: { type: GraphQLNonNull(GraphQLString) },
+      },
+      resolve(parent, args) {
+        return PatientRecord.findByIdAndDelete(args.id);
+      },
+    },
+    updatePatient: {
+      type: PatientType,
+      args: {
+        id: { type: GraphQLNonNull(GraphQLString) },
+        name: { type: GraphQLString },
+        dateOfBirth: { type: GraphQLString },
+        emergencyContact: { type: GraphQLString },
+      },
+      resolve(parent, args) {
+        return PatientRecord.findByIdAndUpdate(
+          args.id,
+          {
+            $set: {
+              name: args.name,
+              dateOfBirth: args.dateOfBirth,
+              emergencyContact: args.emergencyContact,
+            },
+          },
+          { new: true }
+        );
+      },
+    },
+  },
+});
+
 module.exports = new GraphQLSchema({
   query: RootQuery,
+  mutation,
 });

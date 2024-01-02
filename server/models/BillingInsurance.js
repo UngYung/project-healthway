@@ -1,8 +1,10 @@
 const mongoose = require("mongoose");
 
 const billingSchema = new mongoose.Schema({
-  billingID: String,
-  patientID: String,
+  patientID: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: PatientRecord,
+  },
   date: Date,
   itemizedCosts: [
     {
