@@ -1,16 +1,24 @@
 const mongoose = require("mongoose");
 const PatientRecord = require("./PatientRecord");
 
-const appointmentSchema = new mongoose.Schema({
-  patientID: {
+const AppointmentSchema = new mongoose.Schema({
+  appointmentDate: {
+    type: String,
+  },
+  time: {
+    type: String,
+  },
+  purpose: {
+    type: String,
+    enum: ["Routine exam", "Emergency", "Follow up"],
+  },
+  notes: {
+    type: String,
+  },
+  patient: {
     type: mongoose.Schema.Types.ObjectId,
     ref: PatientRecord,
   },
-  doctorID: String,
-  appointmentDate: Date,
-  time: String,
-  purpose: String,
-  notes: String,
 });
 
-module.exports = mongoose.model("Appointment", appointmentSchema);
+module.exports = mongoose.model("Appointment", AppointmentSchema);
