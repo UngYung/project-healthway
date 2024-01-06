@@ -1,5 +1,6 @@
 const Appointment = require("../models/Appointment");
 const PatientRecord = require("../models/PatientRecord");
+const PharmacyItem = require("../models/PharmacyInventory");
 
 const {
   GraphQLObjectType,
@@ -9,6 +10,7 @@ const {
   GraphQLList,
   GraphQLNonNull,
   GraphQLEnumType,
+  GraphQLInt,
 } = require("graphql");
 
 const PatientType = new GraphQLObjectType({
@@ -38,6 +40,15 @@ const AppointmentType = new GraphQLObjectType({
   }),
 });
 
+const PharmacyItemType = new GraphQLObjectType({
+  name: "PharmacyItem",
+  fields: () => ({
+    id: { type: GraphQLID },
+    name: { type: GraphQLString },
+    quantity: { type: GraphQLInt },
+  }),
+});
+
 const RootQuery = new GraphQLObjectType({
   name: "RootQueryType",
   fields: {
@@ -53,6 +64,12 @@ const RootQuery = new GraphQLObjectType({
         return Appointment.find();
       },
     },
+    pharmacyItems: {
+      type: new GraphQLList(PharmacyItemType),
+      resolve(parent, args) {
+        return PharmacyItem.find();
+      },
+    },
     patient: {
       type: PatientType,
       args: { id: { type: GraphQLID } },
@@ -65,6 +82,13 @@ const RootQuery = new GraphQLObjectType({
       args: { id: { type: GraphQLID } },
       resolve(parent, args) {
         return Appointment.findById(args.id);
+      },
+    },
+    pharmacyItem: {
+      type: PharmacyItemType,
+      args: { id: { type: GraphQLID } },
+      resolve(parent, args) {
+        return PharmacyItem.findById(args.id);
       },
     },
   },
@@ -189,6 +213,49 @@ const mutation = new GraphQLObjectType({
               purpose: args.purpose,
               notes: args.notes,
               patient: args.patient,
+            },
+          },
+          { new: true }
+        );
+      },
+    },
+    addPharmacyItem: {
+      type: PharmacyItemType,
+      args: {
+        name: { type: GraphQLNonNull(GraphQLString) },
+        quantity: { type: GraphQLNonNull(GraphQLInt) },
+      },
+      resolve(parent, args) {
+        const pharmacyItem = new PharmacyItem({
+          name: args.name,
+          quantity: args.quantity,
+        });
+        return pharmacyItem.save();
+      },
+    },
+    deletePharmacyItem: {
+      type: PharmacyItemType,
+      args: {
+        id: { type: GraphQLNonNull(GraphQLID) },
+      },
+      resolve(parent, args) {
+        return PharmacyItem.findByIdAndDelete(args.id);
+      },
+    },
+    updatePharmacyItem: {
+      type: PharmacyItemType,
+      args: {
+        id: { type: GraphQLNonNull(GraphQLID) },
+        name: { type: GraphQLString },
+        quantity: { type: GraphQLInt },
+      },
+      resolve(parent, args) {
+        return PharmacyItem.findByIdAndUpdate(
+          args.id,
+          {
+            $set: {
+              name: args.name,
+              quantity: args.quantity,
             },
           },
           { new: true }

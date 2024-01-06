@@ -17,7 +17,6 @@ export default function DeleteAppointmentButton({ appointmentId }) {
     <div className="d-flex mt-f ms-auto">
       <button className="btn btn-danger m-2" onClick={deleteAppointment}>
         <FaTrash className="icon" />
-        Delete appointment
       </button>
     </div>
   );

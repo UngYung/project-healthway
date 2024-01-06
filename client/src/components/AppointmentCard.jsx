@@ -1,4 +1,5 @@
 import React from "react";
+import DeleteAppointmentButton from "./DeleteAppointmentButton";
 
 export default function AppointmentCard({ appointment }) {
   return (
@@ -14,9 +15,12 @@ export default function AppointmentCard({ appointment }) {
               View
             </a>
           </div>
+
           <p className="small">
             Notes: <strong>{appointment.notes}</strong>
           </p>
+
+          <DeleteAppointmentButton appointmentId={appointment.id} />
         </div>
       </div>
     </div>
